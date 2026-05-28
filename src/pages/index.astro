@@ -1,24 +1,13 @@
 ---
 import Base from '../layouts/Base.astro'
+import BuildCard from '../components/BuildCard.astro'
 import Icon from '../components/Icon.astro'
 import { profile } from '../data/profile'
-import { getPublishedEssays } from '../lib/content'
 import { getCollection } from 'astro:content'
-import { builds } from '../data/builds'
-
-// Live content
-const essays = await getPublishedEssays()
-const latestEssay = essays[0]
-
-const allField = await getCollection('field')
-const fieldSorted = allField.sort((a, b) => b.data.takenOn.getTime() - a.data.takenOn.getTime())
-const latestField = fieldSorted[0]
+import { builds, kindLabel } from '../data/builds'
 
 const allBooks = await getCollection('books')
 const currentlyReading = allBooks.find((b) => b.data.status === 'reading')
-const booksRead = allBooks.filter((b) => b.data.status === 'finished').length
-
-const activeBuilds = builds.filter((b) => b.status === 'active').length
 
 const nowEntries = await getCollection('now')
 const nowEntry = nowEntries[0]
@@ -26,17 +15,23 @@ const nowDate = nowEntry?.data.updatedAt
 const daysSinceNow = nowDate ? Math.floor((Date.now() - nowDate.getTime()) / 86400000) : null
 const nowLabel = daysSinceNow === 0 ? 'today' : daysSinceNow === 1 ? 'yesterday' : daysSinceNow != null ? `${daysSinceNow}d ago` : ''
 const nowFresh = daysSinceNow != null && daysSinceNow < 14
+
+const sorted = [...builds].sort((a, b) => a.position - b.position)
+const heroProject = sorted.find(b => b.status === 'active')
+const activeProjects = sorted.filter(b => b.status === 'active' && b !== heroProject)
+const upcoming = sorted.filter(b => b.status === 'soon')
+
+const heroSince = heroProject?.startedOn
+  ? new Date(heroProject.startedOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+  : null
 ---
 
-<Base
-  title={profile.name}
-  description={profile.bio}
->
-  {/* ── Centered composition ── */}
+<Base title={profile.name} description={profile.bio}>
+
+  {/* ── Hero ── */}
   <section class="home-layout">
     <div class="home-center">
 
-      {/* Avatar */}
       <div class="hero-avatar" id="hero-avatar">
         <img
           src={profile.avatar}
@@ -49,7 +44,6 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
         </div>
       </div>
 
-      {/* Name + pen-stroke underline */}
       <div class="name-wrapper">
         <h1 class="home-name" id="hero-name">{profile.name}</h1>
         <svg class="name-underline" id="name-underline" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true">
@@ -57,67 +51,35 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
         </svg>
       </div>
 
-      {/* Bio */}
-      <p class="home-bio" id="hero-bio">
-        {profile.bio}
-      </p>
+      <p class="home-bio" id="hero-bio">{profile.bio}</p>
 
-      {/* Divider */}
       <div class="home-divider" id="hero-divider" />
 
-      {/* Nav grid — live data links */}
-      <nav class="home-nav" id="hero-nav">
-        <a href="/field" class="nav-item" data-nav>
-          <span class="nav-label">Field</span>
-          <span class="nav-sep">·</span>
-          <span class="nav-value">
-            <span class="nav-count" data-count={fieldSorted.length}>{fieldSorted.length}</span> series
-          </span>
-        </a>
-
-        <a href="/essays" class="nav-item" data-nav>
-          <span class="nav-label">Essays</span>
-          <span class="nav-sep">·</span>
-          <span class="nav-value">
-            <span class="nav-count" data-count={essays.length}>{essays.length}</span> published
-          </span>
-        </a>
-
-        <a href="/books" class="nav-item" data-nav>
-          <span class="nav-label">Books</span>
-          <span class="nav-sep">·</span>
-          <span class="nav-value">
-            {currentlyReading
-              ? <span class="nav-reading">{currentlyReading.data.title}</span>
-              : <><span class="nav-count" data-count={booksRead}>{booksRead}</span> read</>
-            }
-          </span>
-        </a>
-
-        <a href="/builds" class="nav-item" data-nav>
-          <span class="nav-label">Builds</span>
-          <span class="nav-sep">·</span>
-          <span class="nav-value">
-            <span class="nav-count" data-count={activeBuilds}>{activeBuilds}</span> active
-          </span>
-        </a>
-      </nav>
-
-      {/* Now — standalone centered */}
-      <a href="/now" class="now-link" id="hero-now" data-nav>
-        <span class="nav-label">Now</span>
-        {nowFresh && (
-          <span class="now-indicator">
-            <span class="now-ping" />
-            <span class="now-dot" />
-          </span>
+      <div class="hero-links" id="hero-links">
+        {currentlyReading && (
+          <a href="/books" class="hero-link-item" data-nav>
+            <span class="nav-label">Reading</span>
+            <span class="nav-sep">·</span>
+            <span class="nav-reading">{currentlyReading.data.title}</span>
+          </a>
         )}
-        <span class="nav-value now-meta">
-          {nowFresh ? `Updated ${nowLabel}` : 'Status'}
-        </span>
-      </a>
 
-      {/* Social */}
+        {currentlyReading && <span class="links-sep">·</span>}
+
+        <a href="/now" class="hero-link-item" data-nav>
+          <span class="nav-label">Now</span>
+          {nowFresh && (
+            <span class="now-indicator">
+              <span class="now-ping" />
+              <span class="now-dot" />
+            </span>
+          )}
+          <span class="nav-value now-meta">
+            {nowFresh ? `Updated ${nowLabel}` : 'Status'}
+          </span>
+        </a>
+      </div>
+
       <div class="home-social" id="hero-social">
         {profile.social.github && (
           <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="social-link">
@@ -132,10 +94,96 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
       </div>
 
     </div>
+
+    <div class="scroll-hint" id="scroll-hint">
+      <div class="scroll-line" />
+    </div>
   </section>
+
+  {/* ── Builds ── */}
+  <section class="builds-section">
+
+    <div class="mx-auto max-w-[var(--container-grid)] px-5 pt-16 pb-10">
+      <div class="flex items-center gap-4 build-fade" style="animation-delay: 0ms">
+        <span class="section-label">Builds</span>
+        <div class="flex-1 h-px bg-subtle" />
+      </div>
+    </div>
+
+    {heroProject && (
+      <div class="hero-strip build-fade" style="animation-delay: 60ms">
+        <div class="mx-auto max-w-[var(--container-grid)] px-5">
+          <div class="hero-meta">
+            <span class="hero-kind">{kindLabel[heroProject.kind]}</span>
+            <span class="hero-dot">·</span>
+            <span class="hero-status-pill">{heroProject.status}</span>
+            {heroSince && <span class="hero-since">Since {heroSince}</span>}
+          </div>
+          <a href={heroProject.url} target="_blank" rel="noopener noreferrer" class="hero-project-link group">
+            <h2 class="hero-title">{heroProject.title}</h2>
+            <span class="hero-arrow"><Icon name="arrow-up-right" size={30} /></span>
+          </a>
+          <p class="hero-desc">{heroProject.description}</p>
+          {heroProject.stack && heroProject.stack.length > 0 && (
+            <div class="hero-stack">
+              {heroProject.stack.map(tech => (
+                <span class="hero-tech">{tech}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div class="hero-accent-bar" />
+      </div>
+    )}
+
+    {activeProjects.length > 0 && (
+      <div class="mx-auto max-w-[var(--container-grid)] px-5 pt-10">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+          {activeProjects.map((build, i) => (
+            <div class="build-fade" style={`animation-delay: ${120 + i * 80}ms`}>
+              <BuildCard build={build} />
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {upcoming.length > 0 && (
+      <div class="mx-auto max-w-[var(--container-grid)] px-5 pt-10 build-fade" style={`animation-delay: ${120 + activeProjects.length * 80 + 80}ms`}>
+        <div class="flex items-center gap-4 mb-6">
+          <span class="font-[family-name:var(--font-mono)] text-xs text-[#8aa1a3] tracking-wider uppercase opacity-75">On the horizon</span>
+          <div class="flex-1 h-px bg-subtle" />
+        </div>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          {upcoming.map((build) => (
+            <div class="group flex items-start gap-4 rounded-sm border border-white/[0.03] bg-card/50 p-5 transition-colors hover:bg-surface/50">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-[family-name:var(--font-heading)] text-lg text-[#52525b] group-hover:text-secondary transition-colors leading-snug mb-1.5">
+                  {build.title}
+                </h3>
+                <p class="text-sm text-[#3f3f46] leading-relaxed mb-3">{build.description}</p>
+                {build.stack && build.stack.length > 0 && (
+                  <div class="flex flex-wrap gap-1.5">
+                    {build.stack.map((tech) => (
+                      <span class="font-[family-name:var(--font-mono)] text-[10px] text-[#3f3f46] bg-subtle px-1.5 py-0.5 rounded">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
+    <div class="pb-24" />
+
+  </section>
+
 </Base>
 
-{/* ── GSAP entrance choreography ── */}
 <script>
   import { gsap } from 'gsap'
 
@@ -144,113 +192,41 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     const avatarEl = document.getElementById('hero-avatar')
     const bioEl = document.getElementById('hero-bio')
     const dividerEl = document.getElementById('hero-divider')
-    const navEl = document.getElementById('hero-nav')
-    const nowEl = document.getElementById('hero-now')
+    const linksEl = document.getElementById('hero-links')
     const socialEl = document.getElementById('hero-social')
 
     if (!nameEl) return
 
     const underlinePath = document.querySelector<SVGPathElement>('#name-underline path')
+    const navItems = linksEl ? linksEl.querySelectorAll('[data-nav]') : []
 
-    const navItems = navEl ? navEl.querySelectorAll('[data-nav]') : []
-    const allNavItems = [...navItems, nowEl].filter(Boolean)
-    const counters = document.querySelectorAll('.nav-count')
-
-    // Kill any loops from previous page visit
     if (avatarEl) gsap.killTweensOf(avatarEl)
 
-    // Set initial states
     gsap.set(avatarEl, { opacity: 0, scale: 0.85 })
     gsap.set(nameEl, { opacity: 0, y: 14 })
     gsap.set(bioEl, { opacity: 0, y: 12 })
     gsap.set(dividerEl, { opacity: 0 })
-    gsap.set(allNavItems, { opacity: 0, y: 8 })
+    gsap.set(navItems, { opacity: 0, y: 8 })
     gsap.set(socialEl, { opacity: 0 })
     if (underlinePath) {
       const pl = underlinePath.getTotalLength()
       gsap.set(underlinePath, { strokeDasharray: pl, strokeDashoffset: pl })
     }
 
-    // Set counters to 0 initially
-    counters.forEach((c) => {
-      const target = parseInt(c.dataset.count || '0', 10)
-      c.textContent = '0'
-      c._countTarget = target
-    })
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.15 })
 
-    // Build timeline
-    const tl = gsap.timeline({
-      defaults: { ease: 'power3.out' },
-      delay: 0.15,
-    })
+    tl.to(avatarEl, { opacity: 1, scale: 1, duration: 0.5 })
+    tl.to(nameEl, { opacity: 1, y: 0, duration: 0.7 }, '-=0.3')
 
-    // 1. Avatar
-    tl.to(avatarEl, {
-      opacity: 1,
-      scale: 1,
-      duration: 0.5,
-    })
-
-    // 2. Name — whole element fades in
-    tl.to(nameEl, {
-      opacity: 1,
-      y: 0,
-      duration: 0.7,
-    }, '-=0.3')
-
-    // 2.5. Pen-stroke underline
     if (underlinePath) {
-      tl.to(underlinePath, {
-        strokeDashoffset: 0,
-        duration: 0.9,
-        ease: 'power2.in',
-      }, '-=0.4')
+      tl.to(underlinePath, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.in' }, '-=0.4')
     }
 
-    // 3. Bio
-    tl.to(bioEl, {
-      opacity: 1,
-      y: 0,
-      duration: 0.4,
-    }, '-=0.25')
+    tl.to(bioEl, { opacity: 1, y: 0, duration: 0.4 }, '-=0.25')
+    tl.to(dividerEl, { opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.15')
+    tl.to(navItems, { opacity: 1, y: 0, duration: 0.4, stagger: 0.08 }, '-=0.2')
+    tl.to(socialEl, { opacity: 1, duration: 0.3 }, '-=0.3')
 
-    // 4. Divider — elegant fade in
-    tl.to(dividerEl, {
-      opacity: 1,
-      duration: 0.4,
-      ease: 'power2.out',
-    }, '-=0.15')
-
-    // 5. Nav items — staggered
-    tl.to(allNavItems, {
-      opacity: 1,
-      y: 0,
-      duration: 0.4,
-      stagger: 0.06,
-    }, '-=0.2')
-
-    // 6. Counter animation
-    counters.forEach((c) => {
-      const target = c._countTarget
-      if (target > 0) {
-        const obj = { val: 0 }
-        tl.to(obj, {
-          val: target,
-          duration: 0.8,
-          ease: 'power2.out',
-          snap: { val: 1 },
-          onUpdate: () => { c.textContent = String(Math.round(obj.val)) },
-        }, '-=0.6')
-      }
-    })
-
-    // 7. Social
-    tl.to(socialEl, {
-      opacity: 1,
-      duration: 0.3,
-    }, '-=0.4')
-
-    // ── Avatar breathing — starts after entrance, creates sense of presence ──
     tl.call(() => {
       if (avatarEl) {
         gsap.to(avatarEl, {
@@ -263,7 +239,6 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
       }
     })
 
-    // ── Avatar warm glow on hover ──
     if (avatarEl instanceof HTMLElement) {
       avatarEl.addEventListener('mouseenter', () => {
         gsap.to(avatarEl, {
@@ -281,46 +256,35 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
       })
     }
 
-    // ── Magnetic hover on nav items ──
-    allNavItems.forEach((item) => {
+    navItems.forEach((item) => {
       if (!(item instanceof HTMLElement)) return
-
       item.addEventListener('mousemove', (e: MouseEvent) => {
         const rect = item.getBoundingClientRect()
         const x = e.clientX - rect.left - rect.width / 2
         const y = e.clientY - rect.top - rect.height / 2
-        gsap.to(item, {
-          x: x * 0.08,
-          y: y * 0.08,
-          duration: 0.3,
-          ease: 'power2.out',
-        })
+        gsap.to(item, { x: x * 0.08, y: y * 0.08, duration: 0.3, ease: 'power2.out' })
       })
-
       item.addEventListener('mouseleave', () => {
-        gsap.to(item, {
-          x: 0,
-          y: 0,
-          duration: 0.4,
-          ease: 'power2.out',
-        })
+        gsap.to(item, { x: 0, y: 0, duration: 0.4, ease: 'power2.out' })
       })
     })
   }
 
-  // Run on load and on Astro page transitions
   initHomeAnimation()
   document.addEventListener('astro:after-swap', initHomeAnimation)
 </script>
 
 <style>
-  /* ═══ Layout ═══ */
+  /* ═══ Hero layout ═══ */
   .home-layout {
-    height: calc(100dvh - 4rem);
+    height: 100dvh;
+    min-height: 600px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem 1.5rem;
+    position: relative;
   }
 
   .home-center {
@@ -386,7 +350,6 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     margin-bottom: 0;
   }
 
-
   /* ═══ Bio ═══ */
   .home-bio {
     font-size: 0.9rem;
@@ -397,12 +360,10 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
   }
 
   @media (min-width: 768px) {
-    .home-bio {
-      font-size: 1rem;
-    }
+    .home-bio { font-size: 1rem; }
   }
 
-  /* ═══ Divider — elegant dots ═══ */
+  /* ═══ Divider ═══ */
   .home-divider {
     width: 100%;
     max-width: 320px;
@@ -411,7 +372,6 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     display: flex;
     align-items: center;
     justify-content: center;
-    transform-origin: center;
   }
 
   .home-divider::after {
@@ -425,26 +385,27 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     font-weight: 400;
   }
 
-  /* ═══ Nav grid ═══ */
-  .home-nav {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem 2.5rem;
-    margin-bottom: 1rem;
+  /* ═══ Links row ═══ */
+  .hero-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.75rem;
   }
 
-  .nav-item {
+  .hero-link-item {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.4rem;
     padding: 0.5rem 0.75rem;
     border-radius: 2px;
     text-decoration: none;
-    white-space: nowrap;
     position: relative;
   }
 
-  .nav-item::after {
+  .hero-link-item::after {
     content: '';
     position: absolute;
     bottom: 3px;
@@ -458,13 +419,13 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     opacity: 0.4;
   }
 
-  .nav-item:hover::after {
-    transform: scaleX(1);
-  }
+  .hero-link-item:hover::after { transform: scaleX(1); }
+  .hero-link-item:hover .nav-label { color: var(--color-accent); transition: color 0.2s; }
 
-  .nav-item:hover .nav-label {
-    color: var(--color-accent);
-    transition: color 0.2s;
+  .links-sep {
+    color: #bfb0a0;
+    font-size: 11px;
+    user-select: none;
   }
 
   .nav-label {
@@ -476,21 +437,12 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     transition: color 0.2s;
   }
 
-  .nav-sep {
-    color: #bfb0a0;
-    font-size: 11px;
-  }
+  .nav-sep { color: #bfb0a0; font-size: 11px; }
 
   .nav-value {
     font-family: var(--font-ui);
     font-size: 13px;
     color: #645849;
-  }
-
-  .nav-count {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--color-primary);
   }
 
   .nav-reading {
@@ -500,41 +452,7 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     font-style: italic;
   }
 
-  /* ═══ Now link ═══ */
-  .now-link {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 2px;
-    text-decoration: none;
-    margin-bottom: 1.75rem;
-    position: relative;
-  }
-
-  .now-link::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 0.75rem;
-    right: 0.75rem;
-    height: 1px;
-    background: var(--color-accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.22s cubic-bezier(0.25, 0, 0, 1);
-    opacity: 0.4;
-  }
-
-  .now-link:hover::after {
-    transform: scaleX(1);
-  }
-
-  .now-link:hover .nav-label {
-    color: var(--color-accent);
-    transition: color 0.2s;
-  }
-
+  /* ═══ Now indicator ═══ */
   .now-indicator {
     position: relative;
     display: flex;
@@ -561,16 +479,10 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
   }
 
   @keyframes now-ping {
-    75%, 100% {
-      transform: scale(2.5);
-      opacity: 0;
-    }
+    75%, 100% { transform: scale(2.5); opacity: 0; }
   }
 
-  .now-meta {
-    font-size: 11px;
-    color: #857165;
-  }
+  .now-meta { font-size: 11px; color: #857165; }
 
   /* ═══ Social ═══ */
   .home-social {
@@ -584,29 +496,173 @@ const nowFresh = daysSinceNow != null && daysSinceNow < 14
     transition: color 0.2s;
   }
 
-  .social-link:hover {
-    color: var(--color-primary);
+  .social-link:hover { color: var(--color-primary); }
+
+  /* ═══ Scroll hint ═══ */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: hint-fade 0.5s ease 2s both;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--color-accent), transparent);
+    animation: scroll-slide 2.2s ease-in-out 2s infinite;
+  }
+
+  @keyframes hint-fade {
+    from { opacity: 0; }
+    to   { opacity: 0.45; }
+  }
+
+  @keyframes scroll-slide {
+    0%   { transform: translateY(-10px); opacity: 0; }
+    40%  { opacity: 1; }
+    100% { transform: translateY(10px);  opacity: 0; }
+  }
+
+  /* ═══ Builds section ═══ */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #857165;
+    opacity: 0.75;
+    white-space: nowrap;
+  }
+
+  @keyframes build-fade-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .build-fade {
+    animation: build-fade-in 0.6s ease both;
+  }
+
+  /* ── Hero project strip ── */
+  .hero-strip {
+    background: #111111;
+    padding: 3.5rem 0 4.5rem;
+    position: relative;
+  }
+
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+
+  .hero-kind {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8aa1a3;
+    opacity: 0.75;
+  }
+
+  .hero-dot { color: rgba(245, 239, 230, 0.12); }
+
+  .hero-status-pill {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+    background: rgba(225, 87, 53, 0.12);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  .hero-since {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(245, 239, 230, 0.18);
+  }
+
+  .hero-project-link {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    text-decoration: none;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-title {
+    font-family: var(--font-heading);
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    color: #f5efe6;
+    transition: color 0.25s;
+  }
+
+  .hero-project-link:hover .hero-title { color: var(--color-accent); }
+
+  .hero-arrow {
+    color: rgba(245, 239, 230, 0.18);
+    margin-top: 0.6rem;
+    flex-shrink: 0;
+    transition: color 0.25s, transform 0.25s;
+  }
+
+  .hero-project-link:hover .hero-arrow {
+    color: var(--color-accent);
+    transform: translate(4px, -4px);
+  }
+
+  .hero-desc {
+    color: rgba(245, 239, 230, 0.4);
+    font-size: 1rem;
+    max-width: 540px;
+    line-height: 1.75;
+    margin-bottom: 2rem;
+  }
+
+  .hero-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .hero-tech {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: rgba(245, 239, 230, 0.28);
+    background: rgba(245, 239, 230, 0.05);
+    border: 1px solid rgba(245, 239, 230, 0.07);
+    padding: 3px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-accent-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-terra);
   }
 
   /* ═══ Mobile ═══ */
   @media (max-width: 767px) {
     .home-layout {
       height: auto;
-      min-height: calc(100dvh - 4rem);
-      padding: 3rem 1.5rem;
-    }
-
-    .home-nav {
-      grid-template-columns: 1fr;
-      gap: 0.25rem;
-    }
-
-    .nav-item {
-      justify-content: center;
-    }
-
-    .now-link {
-      justify-content: center;
+      min-height: 100dvh;
+      padding: 3rem 1.5rem 5rem;
     }
   }
 </style>
