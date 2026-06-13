@@ -50,7 +50,7 @@ export const background: TimelineGroup[] = [
     entries: [
       {
         year: '2015 — 2021',
-        title: 'RTU MIREA',
+        title: 'MIREA — Russian Technological University',
         role: "M.S. & B.S. — Automation of Technological Processes",
         detail: 'Industrial control systems: PLC programming and SCADA.',
       },
