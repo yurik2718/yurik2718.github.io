@@ -5,18 +5,22 @@ import Icon from '../components/Icon.astro'
 import { profile } from '../data/profile'
 import { builds, kindLabel } from '../data/builds'
 import { skillSections } from '../data/skills'
+import { background } from '../data/background'
 
 const sorted = [...builds].sort((a, b) => a.position - b.position)
 const heroProject = sorted.find(b => b.status === 'active')
 const activeProjects = sorted.filter(b => b.status === 'active' && b !== heroProject)
 const upcoming = sorted.filter(b => b.status === 'soon')
+const pastProjects = sorted.filter(b => b.status === 'completed' || b.status === 'archived')
+const professionalWork = pastProjects.filter(b => b.kind === 'business')
+const otherPast = pastProjects.filter(b => b.kind !== 'business')
 
 const heroSince = heroProject?.startedOn
   ? new Date(heroProject.startedOn).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
   : null
 ---
 
-<Base title={profile.name} description={profile.bio}>
+<Base title={`${profile.name} — Ruby on Rails Engineer`} description={profile.bio}>
 
   {/* ── Hero ── */}
   <section class="hero" id="hero">
@@ -29,7 +33,7 @@ const heroSince = heroProject?.startedOn
 
       <p class="hero-available" id="hero-available">
         <span class="avail-dot"></span>
-        Available for work
+        Open to work
       </p>
 
       <h1 class="hero-name" id="hero-name">{profile.name}</h1>
@@ -72,13 +76,12 @@ const heroSince = heroProject?.startedOn
       <div class="section-num" aria-hidden="true">01</div>
       <div class="about-body">
         <h2 class="section-heading">
-          Backend engineer<br />who thinks like a<br />machine operator
+          Backend engineer.<br />Automation<br />background.
         </h2>
         <p class="about-text">
           Before writing software I spent years building control systems for
           industrial machines — PLCs, SCADA, Modbus, OPC UA. Production
-          environments where downtime has a real cost. That experience changes
-          how you think about reliability.
+          environments where downtime has a real cost — that shapes how you write software.
         </p>
         <p class="about-text">
           Now I build backends with Ruby on Rails. I'm learning Rust for the
@@ -132,11 +135,49 @@ const heroSince = heroProject?.startedOn
     </div>
   </section>
 
+  {/* ── Background ── */}
+  {background.length > 0 && (
+    <section class="page-section" id="background">
+      <div class="section-wrap">
+        <div class="section-num" aria-hidden="true">03</div>
+        <div class="background-body">
+          <h2 class="section-heading">Background</h2>
+          <div class="bg-groups">
+            {background.map((group) => (
+              <div class="bg-group">
+                <p class="bg-group-label">{group.label}</p>
+                <div class="bg-timeline">
+                  {group.entries.map((entry) => (
+                    <div class="bg-entry">
+                      <span class="bg-year">{entry.year}</span>
+                      <div class="bg-entry-body">
+                        {entry.url ? (
+                          <a href={entry.url} target="_blank" rel="noopener noreferrer" class="bg-title bg-title--link">
+                            {entry.title}
+                            <Icon name="arrow-up-right" size={12} />
+                          </a>
+                        ) : (
+                          <span class="bg-title">{entry.title}</span>
+                        )}
+                        <span class="bg-role">{entry.role}</span>
+                        {entry.detail && <span class="bg-detail">{entry.detail}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
   {/* ── Builds ── */}
   {(heroProject || activeProjects.length > 0 || upcoming.length > 0) && (
     <section class="page-section" id="builds">
       <div class="section-wrap">
-        <div class="section-num" aria-hidden="true">03</div>
+        <div class="section-num" aria-hidden="true">04</div>
         <div class="builds-body">
           <h2 class="section-heading">Builds</h2>
 
@@ -180,6 +221,43 @@ const heroSince = heroProject?.startedOn
               ))}
             </div>
           )}
+
+          {professionalWork.length > 0 && (
+            <div class="prowork-list">
+              <p class="prowork-label">Professional work</p>
+              {professionalWork.map((build) => (
+                <a href={build.url} target="_blank" rel="noopener noreferrer" class="prowork-item">
+                  <div class="prowork-head">
+                    <h3 class="prowork-title">{build.title}</h3>
+                    <span class="prowork-arrow"><Icon name="arrow-up-right" size={18} /></span>
+                  </div>
+                  <p class="prowork-desc">{build.description}</p>
+                  {build.stack && build.stack.length > 0 && (
+                    <div class="prowork-stack">
+                      {build.stack.map(t => <span class="build-tech">{t}</span>)}
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {otherPast.length > 0 && (
+            <div class="past-list">
+              <p class="past-label">Past work</p>
+              {otherPast.map((build) => (
+                <a href={build.url} target="_blank" rel="noopener noreferrer" class="past-item">
+                  <div class="past-item-left">
+                    <span class="past-title">{build.title}</span>
+                    <span class="past-desc">{build.description}</span>
+                  </div>
+                  <div class="past-item-right">
+                    {build.stack && build.stack.map(t => <span class="build-tech">{t}</span>)}
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -188,11 +266,11 @@ const heroSince = heroProject?.startedOn
   {/* ── Contact ── */}
   <section class="page-section contact-section" id="contact">
     <div class="section-wrap">
-      <div class="section-num" aria-hidden="true">04</div>
+      <div class="section-num" aria-hidden="true">05</div>
       <div class="contact-body">
-        <h2 class="section-heading">Let's work<br />together</h2>
+        <h2 class="section-heading">Open to<br />work.</h2>
         <p class="contact-text">
-          The easiest way to reach me is Telegram — I read everything and reply.
+          I work autonomously and take ownership end to end — remote-first, async-friendly, and I ship on time. Reach me on Telegram.
         </p>
         <div class="contact-links">
           {profile.social.telegram && (
@@ -204,7 +282,7 @@ const heroSince = heroProject?.startedOn
           {profile.social.github && (
             <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="contact-link">
               <Icon name="github" size={14} />
-              yurikonrails
+              yurik2718
             </a>
           )}
         </div>
@@ -215,12 +293,20 @@ const heroSince = heroProject?.startedOn
 </Base>
 
 <script>
-  import * as THREE from 'three'
   import { gsap } from 'gsap'
 
-  function initThree() {
+  const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const SMALL_SCREEN   = window.matchMedia('(max-width: 767px)').matches
+
+  async function initThree() {
     const canvas = document.getElementById('hero-canvas') as HTMLCanvasElement | null
     if (!canvas) return
+
+    // Skip the WebGL hero on reduced-motion preference or small screens —
+    // this avoids downloading ~0.5 MB of Three.js and saves battery on mobile.
+    if (REDUCED_MOTION || SMALL_SCREEN) return
+
+    const THREE = await import('three')
 
     const section = canvas.closest('section') as HTMLElement
 
@@ -295,6 +381,13 @@ const heroSince = heroProject?.startedOn
     if (!name) return
 
     const els = [avatar, available, name, rule, roles, actions, cue].filter(Boolean)
+
+    // Respect reduced-motion: reveal everything at once, no entrance animation.
+    if (REDUCED_MOTION) {
+      gsap.set(els, { opacity: 1, y: 0 })
+      return
+    }
+
     gsap.set(els, { opacity: 0, y: 18 })
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.1 })
@@ -816,6 +909,279 @@ const heroSince = heroProject?.startedOn
     font-family: var(--font-ui);
     font-size: 0.8rem;
     color: rgba(238, 235, 230, 0.18);
+  }
+
+  /* ══ Professional work ══ */
+  .prowork-list { margin-top: 3.5rem; }
+
+  .prowork-label {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(238, 235, 230, 0.4);
+    margin-bottom: 1.25rem;
+  }
+
+  .prowork-item {
+    display: block;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1.75rem 2rem;
+    text-decoration: none;
+    transition: border-color 0.22s, background 0.22s;
+  }
+
+  .prowork-item + .prowork-item { margin-top: 1rem; }
+
+  .prowork-item:hover {
+    border-color: rgba(238, 235, 230, 0.22);
+    background: rgba(255, 255, 255, 0.035);
+  }
+
+  .prowork-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .prowork-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-primary);
+    line-height: 1.1;
+  }
+
+  .prowork-arrow {
+    color: rgba(238, 235, 230, 0.2);
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    transition: color 0.22s, transform 0.25s;
+  }
+
+  .prowork-item:hover .prowork-arrow {
+    color: rgba(238, 235, 230, 0.55);
+    transform: translate(3px, -3px);
+  }
+
+  .prowork-desc {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--color-secondary);
+    max-width: 560px;
+    margin-bottom: 1.25rem;
+  }
+
+  .prowork-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* ══ Past work ══ */
+  .past-list {
+    margin-top: 3.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .past-label {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(238, 235, 230, 0.18);
+    margin-bottom: 1.25rem;
+  }
+
+  .past-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .past-item:last-child { border-bottom: none; }
+
+  .past-item:hover { opacity: 0.75; }
+
+  .past-item-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .past-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(238, 235, 230, 0.38);
+    letter-spacing: -0.01em;
+  }
+
+  .past-desc {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: rgba(238, 235, 230, 0.2);
+    line-height: 1.6;
+    max-width: 480px;
+  }
+
+  .past-item-right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    align-items: flex-start;
+    justify-content: flex-end;
+    max-width: 220px;
+  }
+
+  @media (max-width: 640px) {
+    .past-item { flex-direction: column; gap: 0.75rem; }
+    .past-item-right { justify-content: flex-start; max-width: 100%; }
+  }
+
+  /* ══ Background ══ */
+  .background-body { position: relative; }
+
+  .bg-groups {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .bg-groups { gap: 4rem 5rem; }
+  }
+
+  .bg-group-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(238, 235, 230, 0.28);
+    margin-bottom: 1.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .bg-timeline {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bg-entry {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 1.5rem;
+    padding: 0 0 2rem 0;
+    position: relative;
+  }
+
+  /* Timeline rail + node on the year/body boundary */
+  .bg-entry::before {
+    content: '';
+    position: absolute;
+    left: 7.5rem;
+    top: 0.55rem;
+    bottom: -0.45rem;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .bg-entry:last-child::before { display: none; }
+
+  .bg-entry::after {
+    content: '';
+    position: absolute;
+    left: calc(7.5rem - 2.5px);
+    top: 0.45rem;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(238, 235, 230, 0.3);
+  }
+
+  .bg-year {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    color: rgba(238, 235, 230, 0.32);
+    padding-top: 0.15rem;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .bg-entry-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding-left: 1.25rem;
+    min-width: 0;
+  }
+
+  .bg-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-primary);
+  }
+
+  .bg-title--link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    text-decoration: none;
+    transition: color 0.2s;
+    width: fit-content;
+  }
+
+  .bg-title--link > :global(svg) {
+    color: rgba(238, 235, 230, 0.25);
+    transition: color 0.2s, transform 0.2s;
+  }
+
+  .bg-title--link:hover { color: rgba(238, 235, 230, 0.6); }
+  .bg-title--link:hover > :global(svg) {
+    color: rgba(238, 235, 230, 0.5);
+    transform: translate(2px, -2px);
+  }
+
+  .bg-role {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(238, 235, 230, 0.4);
+  }
+
+  .bg-detail {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: rgba(238, 235, 230, 0.45);
+    margin-top: 0.2rem;
+    max-width: 460px;
+  }
+
+  @media (max-width: 520px) {
+    .bg-entry { grid-template-columns: 5rem 1fr; gap: 1rem; }
+    .bg-entry::before { left: 5rem; }
+    .bg-entry::after { left: calc(5rem - 2.5px); }
+    .bg-entry-body { padding-left: 1rem; }
+    .bg-year { font-size: 0.56rem; }
   }
 
   /* ══ Contact ══ */

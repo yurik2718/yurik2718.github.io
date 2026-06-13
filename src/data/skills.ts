@@ -26,6 +26,7 @@ export const skillSections: SkillSection[] = [
       { label: 'Languages',   skills: ['Structured Text', 'Function Block Diagram'] },
       { label: 'Platforms',   skills: ['CODESYS', 'Beremiz PLC', 'Unimod', 'Weintek EasyBuilder'] },
       { label: 'Protocols',   skills: ['Modbus TCP/RTU', 'OPC UA'] },
+      { label: 'Networking',  skills: ['TCP/IP', 'Ethernet', 'RS-485 / RS-232'] },
       { label: 'HMI / SCADA', skills: ['MasterSCADA 4D', 'Alpha Platform', 'Weintek HMI'] },
     ],
   },

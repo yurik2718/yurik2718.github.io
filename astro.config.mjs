@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import sitemap from '@astrojs/sitemap'
 
 export default defineConfig({
-  site: 'https://yurikonrails.github.io',
+  site: 'https://yurik2718.github.io',
   integrations: [sitemap()],
   vite: {
     plugins: [tailwindcss()],
@@ -37,10 +37,11 @@ export default defineConfig({
     },
     {
       provider: fontProviders.google(),
-      name: 'IBM Plex Mono',
+      name: 'DM Mono',
       cssVariable: '--font-mono',
-      weights: [400],
-      subsets: ['latin', 'cyrillic'],
+      weights: [400, 500],
+      styles: ['normal', 'italic'],
+      subsets: ['latin'],
       display: 'swap',
     },
   ],

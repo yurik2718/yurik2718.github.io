@@ -81,24 +81,28 @@ const year = new Date().getFullYear()
 
   {/* Nav links */}
   <div class="menu-content">
-    <p class="menu-kicker">Navigate</p>
-    <nav>
-      <ul>
-        {navLinks.map(({ href, label }) => (
-          <li>
-            <a
-              href={href}
-              class:list={[
-                'menu-link',
-                currentPath.startsWith(href) ? 'menu-link--active' : '',
-              ]}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    {navLinks.length > 0 && (
+      <>
+        <p class="menu-kicker">Navigate</p>
+        <nav>
+          <ul>
+            {navLinks.map(({ href, label }) => (
+              <li>
+                <a
+                  href={href}
+                  class:list={[
+                    'menu-link',
+                    currentPath.startsWith(href) ? 'menu-link--active' : '',
+                  ]}
+                >
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </>
+    )}
   </div>
 
   {/* Bottom — social + copyright */}

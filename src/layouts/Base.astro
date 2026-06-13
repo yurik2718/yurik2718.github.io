@@ -3,7 +3,7 @@ import { Font } from 'astro:assets'
 import { ClientRouter } from 'astro:transitions'
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
-import { SITE_NAME } from '../data/config'
+import Effects from '../components/Effects.astro'
 import '../styles/global.css'
 
 interface Props {
@@ -24,7 +24,7 @@ const {
   publishedAt,
 } = Astro.props
 
-const defaultOgImage = new URL('/og-default.avif', Astro.site).href
+const defaultOgImage = new URL('/og-default.png', Astro.site).href
 const ogImage = image || defaultOgImage
 
 const structuredData = {
@@ -42,9 +42,12 @@ const structuredData = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} — {SITE_NAME}</title>
+    <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl || Astro.url.href} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#0a0a0a" />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -76,6 +79,7 @@ const structuredData = {
       <slot />
     </main>
     <Footer />
+    <Effects />
 
     <script>
       import Lenis from 'lenis'

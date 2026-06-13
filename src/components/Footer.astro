@@ -52,12 +52,16 @@ const barQuote = bioSentences.slice(1).join('. ')
 
       {/* ── Navigate column ── */}
       <div class="flex flex-col">
-        <p class="footer-col-label">Navigate</p>
-        <nav class="flex flex-col gap-3">
-          {navLinks.map(({ href, label }) => (
-            <a href={href} class="footer-link">{label}</a>
-          ))}
-        </nav>
+        {navLinks.length > 0 && (
+          <>
+            <p class="footer-col-label">Navigate</p>
+            <nav class="flex flex-col gap-3">
+              {navLinks.map(({ href, label }) => (
+                <a href={href} class="footer-link">{label}</a>
+              ))}
+            </nav>
+          </>
+        )}
         <p class="footer-copy mt-8">&copy; {profile.name} {year}</p>
       </div>
 
