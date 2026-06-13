@@ -13,11 +13,11 @@ export interface Profile {
 
 export const profile: Profile = {
   name: 'Andrey Yurik',
-  bio: 'Building software, writing essays, photographing the world. Interested in systems, craft, and the spaces between.',
+  bio: 'Ruby on Rails engineer with a background in industrial automation. Building reliable backend software. Learning Rust.',
   avatar: '/avatar.jpg',
   location: '',
   social: {
-    github: 'https://github.com/yurikonrails',
-    telegram: 'https://t.me/yurikonrails',
+    github: 'https://github.com/yurik2718',
+    telegram: 'https://t.me/industrialprofi',
   },
 }

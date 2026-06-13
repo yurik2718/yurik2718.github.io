@@ -42,25 +42,4 @@ const field = defineCollection({
   }),
 })
 
-const books = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/books' }),
-  schema: z.object({
-    title: z.string(),
-    author: z.string(),
-    cover: z.string(),
-    status: z.enum(['reading', 'finished', 'dropped']),
-    rating: z.enum(['skip', 'good', 'essential']).optional(),
-    yearRead: z.number(),
-    keyIdea: z.string(),
-    tags: z.array(z.string()).optional().default([]),
-  }),
-})
-
-const now = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/now' }),
-  schema: z.object({
-    updatedAt: z.coerce.date(),
-  }),
-})
-
-export const collections = { essays, field, books, now }
+export const collections = { essays, field }

@@ -1,18 +1,18 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Colors */
-  --color-base: #f5efe6;
-  --color-surface: #ece5d5;
-  --color-card: #e4d4c2;
-  --color-dark: #111111;
-  --color-sage: #8aa1a3;
-  --color-terra: #e15735;
-  --color-subtle: rgba(17, 17, 17, 0.08);
-  --color-primary: #111111;
-  --color-secondary: #645849;
-  --color-accent: #e15735;
-  --color-accent-dim: rgba(225, 87, 53, 0.12);
+  /* Colors — dark + white minimalism */
+  --color-base: #0a0a0a;
+  --color-surface: #111111;
+  --color-card: #161616;
+  --color-dark: #0a0a0a;
+  --color-sage: rgba(238, 235, 230, 0.35);
+  --color-terra: rgba(238, 235, 230, 0.15);
+  --color-subtle: rgba(255, 255, 255, 0.06);
+  --color-primary: #eeebe6;
+  --color-secondary: rgba(238, 235, 230, 0.42);
+  --color-accent: #eeebe6;
+  --color-accent-dim: rgba(238, 235, 230, 0.08);
 
   /* Font families */
   --font-heading: 'Manrope', sans-serif;
@@ -36,44 +36,6 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* World map — responsive background optimized for all devices */
-html::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: url('/world.svg') center 40% / 160% auto no-repeat;
-  opacity: 0.06;
-  pointer-events: none;
-  image-rendering: crisp-edges;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Mobile: up to 767px — higher zoom, parallax effect */
-@media (max-width: 767px) {
-  html::before {
-    background: url('/world.svg') center 20% / 280% auto no-repeat fixed;
-    opacity: 0.055;
-    mix-blend-mode: multiply;
-  }
-}
-
-/* Tablet: 768px to 1023px — medium zoom */
-@media (min-width: 768px) and (max-width: 1023px) {
-  html::before {
-    background: url('/world.svg') center 32% / 190% auto no-repeat;
-    opacity: 0.07;
-  }
-}
-
-/* Desktop: 1024px+ — optimal scale with smooth responsive behavior */
-@media (min-width: 1024px) {
-  html::before {
-    background: url('/world.svg') center 38% / clamp(140%, 200%, 1800px) auto no-repeat;
-    opacity: 0.085;
-  }
-}
-
-
 body {
   position: relative;
   z-index: 0;
@@ -82,17 +44,16 @@ body {
   background-color: transparent;
 }
 
-/* Atmosphere — warm ambient light */
-body::before {
+/* Subtle grid — white lines on dark */
+body::after {
   content: '';
   position: fixed;
-  inset: -40%;
+  inset: 0;
   z-index: -1;
   background:
-    radial-gradient(ellipse 600px 500px at 30% 40%, rgba(225, 87, 53, 0.05), transparent 70%),
-    radial-gradient(ellipse 500px 600px at 70% 55%, rgba(225, 87, 53, 0.035), transparent 70%);
+    repeating-linear-gradient(0deg,  rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 90px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.022) 0 1px, transparent 1px 90px);
   pointer-events: none;
-  animation: drift 30s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 @keyframes drift {
@@ -102,19 +63,7 @@ body::before {
   75%      { transform: translate(-6%, -3%) }
 }
 
-/* Cartographic grid */
-body::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    repeating-linear-gradient(0deg, rgba(17, 17, 17, 0.04) 0 1px, transparent 1px 90px),
-    repeating-linear-gradient(90deg, rgba(17, 17, 17, 0.04) 0 1px, transparent 1px 90px);
-  pointer-events: none;
-}
-
-/* Typography hierarchy — Manrope */
+/* Typography hierarchy */
 h1 {
   font-family: var(--font-heading);
   font-weight: 800;
@@ -136,12 +85,6 @@ h3 {
   letter-spacing: -0.025em;
 }
 
-/*
- * Kicker — маленький uppercase-лейбл над большим заголовком.
- * Приём NatGeo / Vox / Bloomberg. Использование:
- *   <p class="kicker">Essays</p>
- *   <h2>Заголовок раздела</h2>
- */
 .kicker {
   font-family: var(--font-ui);
   font-size: 0.65rem;
@@ -160,8 +103,6 @@ html.lenis, html.lenis body {
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
-
-
 
 /* Card reveal animation (CSS scroll-driven) */
 @keyframes card-reveal {
@@ -182,7 +123,7 @@ html.lenis, html.lenis body {
   }
 }
 
-/* Prose — shared typography for rendered Markdown */
+/* Prose */
 .prose {
   font-family: var(--font-body);
   font-size: 1.125rem;
@@ -210,28 +151,20 @@ html.lenis, html.lenis body {
   scroll-margin-top: 5rem;
 }
 
-.prose p {
-  margin-bottom: 1.5rem;
-}
+.prose p { margin-bottom: 1.5rem; }
 
 .prose a {
-  color: var(--color-accent);
+  color: var(--color-primary);
   text-decoration: underline;
   text-underline-offset: 3px;
-  transition: color 0.2s;
+  opacity: 0.75;
+  transition: opacity 0.2s;
 }
 
-.prose a:hover {
-  color: var(--color-primary);
-}
+.prose a:hover { opacity: 1; }
 
-.prose strong {
-  font-weight: 600;
-}
-
-.prose em {
-  font-style: italic;
-}
+.prose strong { font-weight: 600; }
+.prose em     { font-style: italic; }
 
 .prose ol {
   list-style-type: decimal;
@@ -245,12 +178,10 @@ html.lenis, html.lenis body {
   margin-bottom: 1.5rem;
 }
 
-.prose li {
-  margin-bottom: 0.5rem;
-}
+.prose li { margin-bottom: 0.5rem; }
 
 .prose blockquote {
-  border-left: 2px solid var(--color-accent);
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
   padding-left: 1.25rem;
   margin: 2rem 0;
   color: var(--color-secondary);
@@ -281,7 +212,7 @@ html.lenis, html.lenis body {
   line-height: 1.6;
 }
 
-/* Default images — wide, capped at 1400px */
+/* Default images */
 .prose img {
   border-radius: 0;
   border: none;
@@ -292,14 +223,14 @@ html.lenis, html.lenis body {
   cursor: zoom-in;
 }
 
-/* Narrow images — prose width with small bleed */
+/* Narrow images */
 .prose img[title="narrow"] {
   border-radius: 0;
   margin: 2.5rem -1rem;
   width: calc(100% + 2rem);
   max-width: calc(100% + 2rem);
   margin-left: -1rem;
-  border: 1px solid rgba(17, 17, 17, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 @media (max-width: 768px) {
@@ -311,7 +242,7 @@ html.lenis, html.lenis body {
   }
 }
 
-/* Photo captions — shared style for field (.photo-caption) and essays (em after img) */
+/* Captions */
 .photo-caption,
 .prose p:has(> img) > em:last-child {
   display: block;
@@ -324,9 +255,7 @@ html.lenis, html.lenis body {
   margin-top: 0.5rem;
 }
 
-.prose p:has(> img) > img {
-  margin-bottom: 0 !important;
-}
+.prose p:has(> img) > img { margin-bottom: 0 !important; }
 
 .prose hr {
   border: none;
@@ -334,7 +263,7 @@ html.lenis, html.lenis body {
   margin: 3rem 0;
 }
 
-/* Tables — wrap in scrollable container via display trick */
+/* Tables */
 .prose :where(table) {
   display: block;
   overflow-x: auto;
@@ -351,27 +280,23 @@ html.lenis, html.lenis body {
   font-weight: 400;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #857165;
+  color: rgba(238, 235, 230, 0.35);
   text-align: left;
   padding: 0 1rem 0.75rem 0;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .prose td {
   padding: 0.6rem 1rem 0.6rem 0;
   color: var(--color-secondary);
-  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.prose tr:last-child td {
-  border-bottom: none;
-}
+.prose tr:last-child td { border-bottom: none; }
 
-.prose td:first-child {
-  color: var(--color-primary);
-}
+.prose td:first-child { color: var(--color-primary); }
 
-/* Drop cap — first letter of first paragraph */
+/* Drop cap */
 .prose-dropcap > p:first-of-type::first-letter {
   font-family: var(--font-heading);
   font-weight: 800;
@@ -383,12 +308,12 @@ html.lenis, html.lenis body {
   color: var(--color-accent);
 }
 
-/* Section dividers — decorative dots before each h2 */
+/* Section dividers */
 .prose-dividers h2::before {
   content: '· · ·';
   display: block;
   text-align: center;
-  color: #aca49a;
+  color: rgba(238, 235, 230, 0.2);
   letter-spacing: 0.3em;
   font-size: 1rem;
   font-family: var(--font-ui);
@@ -396,7 +321,6 @@ html.lenis, html.lenis body {
   margin-bottom: 2rem;
 }
 
-/* No divider before the first h2 */
 .prose-dividers > h2:first-child::before,
 .prose-dividers > p:first-of-type + h2::before {
   content: none;
@@ -409,15 +333,11 @@ html.lenis, html.lenis body {
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
+::-webkit-scrollbar { width: 6px; }
 
-::-webkit-scrollbar-track {
-  background: var(--color-base);
-}
+::-webkit-scrollbar-track { background: var(--color-base); }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-secondary);
+  background: rgba(238, 235, 230, 0.2);
   border-radius: 3px;
 }

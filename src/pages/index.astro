@@ -3,18 +3,8 @@ import Base from '../layouts/Base.astro'
 import BuildCard from '../components/BuildCard.astro'
 import Icon from '../components/Icon.astro'
 import { profile } from '../data/profile'
-import { getCollection } from 'astro:content'
 import { builds, kindLabel } from '../data/builds'
-
-const allBooks = await getCollection('books')
-const currentlyReading = allBooks.find((b) => b.data.status === 'reading')
-
-const nowEntries = await getCollection('now')
-const nowEntry = nowEntries[0]
-const nowDate = nowEntry?.data.updatedAt
-const daysSinceNow = nowDate ? Math.floor((Date.now() - nowDate.getTime()) / 86400000) : null
-const nowLabel = daysSinceNow === 0 ? 'today' : daysSinceNow === 1 ? 'yesterday' : daysSinceNow != null ? `${daysSinceNow}d ago` : ''
-const nowFresh = daysSinceNow != null && daysSinceNow < 14
+import { skillSections } from '../data/skills'
 
 const sorted = [...builds].sort((a, b) => a.position - b.position)
 const heroProject = sorted.find(b => b.status === 'active')
@@ -29,640 +19,850 @@ const heroSince = heroProject?.startedOn
 <Base title={profile.name} description={profile.bio}>
 
   {/* ── Hero ── */}
-  <section class="home-layout">
-    <div class="home-center">
+  <section class="hero" id="hero">
+    <canvas id="hero-canvas" class="hero-canvas" aria-hidden="true"></canvas>
 
+    <div class="hero-inner" id="hero-inner">
       <div class="hero-avatar" id="hero-avatar">
-        <img
-          src={profile.avatar}
-          alt={profile.name}
-          class="h-full w-full object-cover"
-          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-        />
-        <div class="hidden h-full w-full items-center justify-center bg-surface text-[#3f3f46] text-3xl font-[family-name:var(--font-heading)]">
-          {profile.name.split(' ').map((n) => n[0]).join('')}
-        </div>
+        <img src={profile.avatar} alt={profile.name} class="hero-avatar-img" />
       </div>
 
-      <div class="name-wrapper">
-        <h1 class="home-name" id="hero-name">{profile.name}</h1>
-        <svg class="name-underline" id="name-underline" viewBox="0 0 300 12" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M 2 9 C 18 3, 62 12, 118 7 C 172 2, 228 11, 274 8 L 298 9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <p class="hero-available" id="hero-available">
+        <span class="avail-dot"></span>
+        Available for work
+      </p>
+
+      <h1 class="hero-name" id="hero-name">{profile.name}</h1>
+
+      <div class="hero-rule" id="hero-rule"></div>
+
+      <div class="hero-roles" id="hero-roles">
+        <span class="hero-role">Ruby on Rails</span>
+        <span class="hero-sep">·</span>
+        <span class="hero-role">Industrial Automation</span>
+        <span class="hero-sep">·</span>
+        <span class="hero-role hero-role--dim">Rust</span>
       </div>
 
-      <p class="home-bio" id="hero-bio">{profile.bio}</p>
-
-      <div class="home-divider" id="hero-divider" />
-
-      <div class="hero-links" id="hero-links">
-        {currentlyReading && (
-          <a href="/books" class="hero-link-item" data-nav>
-            <span class="nav-label">Reading</span>
-            <span class="nav-sep">·</span>
-            <span class="nav-reading">{currentlyReading.data.title}</span>
-          </a>
-        )}
-
-        {currentlyReading && <span class="links-sep">·</span>}
-
-        <a href="/now" class="hero-link-item" data-nav>
-          <span class="nav-label">Now</span>
-          {nowFresh && (
-            <span class="now-indicator">
-              <span class="now-ping" />
-              <span class="now-dot" />
-            </span>
-          )}
-          <span class="nav-value now-meta">
-            {nowFresh ? `Updated ${nowLabel}` : 'Status'}
-          </span>
-        </a>
-      </div>
-
-      <div class="home-social" id="hero-social">
-        {profile.social.github && (
-          <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="social-link">
-            <Icon name="github" size={16} />
-          </a>
-        )}
+      <div class="hero-actions" id="hero-actions">
         {profile.social.telegram && (
-          <a href={profile.social.telegram} target="_blank" rel="noopener noreferrer" class="social-link">
-            <Icon name="telegram" size={16} />
+          <a href={profile.social.telegram} target="_blank" rel="noopener noreferrer" class="hero-btn hero-btn--primary">
+            <Icon name="telegram" size={13} />
+            Telegram
+          </a>
+        )}
+        {profile.social.github && (
+          <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="hero-btn">
+            <Icon name="github" size={13} />
+            GitHub
           </a>
         )}
       </div>
-
     </div>
 
-    <div class="scroll-hint" id="scroll-hint">
-      <div class="scroll-line" />
+    <div class="scroll-cue" id="scroll-cue">
+      <span class="scroll-cue-label">scroll</span>
+      <div class="scroll-cue-line"></div>
+    </div>
+  </section>
+
+  {/* ── About ── */}
+  <section class="page-section" id="about">
+    <div class="section-wrap">
+      <div class="section-num" aria-hidden="true">01</div>
+      <div class="about-body">
+        <h2 class="section-heading">
+          Backend engineer<br />who thinks like a<br />machine operator
+        </h2>
+        <p class="about-text">
+          Before writing software I spent years building control systems for
+          industrial machines — PLCs, SCADA, Modbus, OPC UA. Production
+          environments where downtime has a real cost. That experience changes
+          how you think about reliability.
+        </p>
+        <p class="about-text">
+          Now I build backends with Ruby on Rails. I'm learning Rust for the
+          same reason I once chose CODESYS: because correctness matters.
+        </p>
+
+        <div class="about-tags">
+          <div class="about-tag">
+            <span class="about-tag-key">Primary stack</span>
+            <span class="about-tag-val">Ruby on Rails</span>
+          </div>
+          <div class="about-tag">
+            <span class="about-tag-key">Previous domain</span>
+            <span class="about-tag-val">Industrial Automation</span>
+          </div>
+          <div class="about-tag">
+            <span class="about-tag-key">Exploring</span>
+            <span class="about-tag-val">Rust</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ── Skills ── */}
+  <section class="page-section" id="skills">
+    <div class="section-wrap">
+      <div class="section-num" aria-hidden="true">02</div>
+      <div class="skills-body">
+        <h2 class="section-heading">Skills</h2>
+        <div class="skills-grid">
+          {skillSections.map((sec) => (
+            <div class="skill-col">
+              <h3 class="skill-col-title">{sec.title}</h3>
+              {sec.categories.map((cat) => (
+                <div class="skill-group">
+                  <span class="skill-label">{cat.label}</span>
+                  <div class="skill-tags">
+                    {cat.skills.map((skill) => (
+                      <span class={`skill-tag${cat.label === 'Exploring' ? ' skill-tag--exploring' : ''}`}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   </section>
 
   {/* ── Builds ── */}
-  <section class="builds-section">
+  {(heroProject || activeProjects.length > 0 || upcoming.length > 0) && (
+    <section class="page-section" id="builds">
+      <div class="section-wrap">
+        <div class="section-num" aria-hidden="true">03</div>
+        <div class="builds-body">
+          <h2 class="section-heading">Builds</h2>
 
-    <div class="mx-auto max-w-[var(--container-grid)] px-5 pt-16 pb-10">
-      <div class="flex items-center gap-4 build-fade" style="animation-delay: 0ms">
-        <span class="section-label">Builds</span>
-        <div class="flex-1 h-px bg-subtle" />
-      </div>
-    </div>
+          {heroProject && (
+            <div class="build-hero">
+              <div class="build-hero-meta">
+                <span class="build-kind">{kindLabel[heroProject.kind]}</span>
+                <span class="build-sep">·</span>
+                <span class="build-status">{heroProject.status}</span>
+                {heroSince && <span class="build-since">Since {heroSince}</span>}
+              </div>
+              <a href={heroProject.url} target="_blank" rel="noopener noreferrer" class="build-hero-link">
+                <h3 class="build-hero-title">{heroProject.title}</h3>
+                <span class="build-hero-arrow"><Icon name="arrow-up-right" size={26} /></span>
+              </a>
+              <p class="build-hero-desc">{heroProject.description}</p>
+              {heroProject.stack && heroProject.stack.length > 0 && (
+                <div class="build-hero-stack">
+                  {heroProject.stack.map(tech => <span class="build-tech">{tech}</span>)}
+                </div>
+              )}
+            </div>
+          )}
 
-    {heroProject && (
-      <div class="hero-strip build-fade" style="animation-delay: 60ms">
-        <div class="mx-auto max-w-[var(--container-grid)] px-5">
-          <div class="hero-meta">
-            <span class="hero-kind">{kindLabel[heroProject.kind]}</span>
-            <span class="hero-dot">·</span>
-            <span class="hero-status-pill">{heroProject.status}</span>
-            {heroSince && <span class="hero-since">Since {heroSince}</span>}
-          </div>
-          <a href={heroProject.url} target="_blank" rel="noopener noreferrer" class="hero-project-link group">
-            <h2 class="hero-title">{heroProject.title}</h2>
-            <span class="hero-arrow"><Icon name="arrow-up-right" size={30} /></span>
-          </a>
-          <p class="hero-desc">{heroProject.description}</p>
-          {heroProject.stack && heroProject.stack.length > 0 && (
-            <div class="hero-stack">
-              {heroProject.stack.map(tech => (
-                <span class="hero-tech">{tech}</span>
+          {activeProjects.length > 0 && (
+            <div class="builds-grid">
+              {activeProjects.map((build) => (
+                <BuildCard build={build} />
+              ))}
+            </div>
+          )}
+
+          {upcoming.length > 0 && (
+            <div class="upcoming-list">
+              <p class="upcoming-label">On the horizon</p>
+              {upcoming.map((build) => (
+                <div class="upcoming-item">
+                  <span class="upcoming-title">{build.title}</span>
+                  <span class="upcoming-desc">{build.description}</span>
+                </div>
               ))}
             </div>
           )}
         </div>
-        <div class="hero-accent-bar" />
       </div>
-    )}
+    </section>
+  )}
 
-    {activeProjects.length > 0 && (
-      <div class="mx-auto max-w-[var(--container-grid)] px-5 pt-10">
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {activeProjects.map((build, i) => (
-            <div class="build-fade" style={`animation-delay: ${120 + i * 80}ms`}>
-              <BuildCard build={build} />
-            </div>
-          ))}
+  {/* ── Contact ── */}
+  <section class="page-section contact-section" id="contact">
+    <div class="section-wrap">
+      <div class="section-num" aria-hidden="true">04</div>
+      <div class="contact-body">
+        <h2 class="section-heading">Let's work<br />together</h2>
+        <p class="contact-text">
+          The easiest way to reach me is Telegram — I read everything and reply.
+        </p>
+        <div class="contact-links">
+          {profile.social.telegram && (
+            <a href={profile.social.telegram} target="_blank" rel="noopener noreferrer" class="contact-link">
+              <Icon name="telegram" size={14} />
+              @industrialprofi
+            </a>
+          )}
+          {profile.social.github && (
+            <a href={profile.social.github} target="_blank" rel="noopener noreferrer" class="contact-link">
+              <Icon name="github" size={14} />
+              yurikonrails
+            </a>
+          )}
         </div>
       </div>
-    )}
-
-    {upcoming.length > 0 && (
-      <div class="mx-auto max-w-[var(--container-grid)] px-5 pt-10 build-fade" style={`animation-delay: ${120 + activeProjects.length * 80 + 80}ms`}>
-        <div class="flex items-center gap-4 mb-6">
-          <span class="font-[family-name:var(--font-mono)] text-xs text-[#8aa1a3] tracking-wider uppercase opacity-75">On the horizon</span>
-          <div class="flex-1 h-px bg-subtle" />
-        </div>
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {upcoming.map((build) => (
-            <div class="group flex items-start gap-4 rounded-sm border border-white/[0.03] bg-card/50 p-5 transition-colors hover:bg-surface/50">
-              <div class="flex-1 min-w-0">
-                <h3 class="font-[family-name:var(--font-heading)] text-lg text-[#52525b] group-hover:text-secondary transition-colors leading-snug mb-1.5">
-                  {build.title}
-                </h3>
-                <p class="text-sm text-[#3f3f46] leading-relaxed mb-3">{build.description}</p>
-                {build.stack && build.stack.length > 0 && (
-                  <div class="flex flex-wrap gap-1.5">
-                    {build.stack.map((tech) => (
-                      <span class="font-[family-name:var(--font-mono)] text-[10px] text-[#3f3f46] bg-subtle px-1.5 py-0.5 rounded">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
-
-    <div class="pb-24" />
-
+    </div>
   </section>
 
 </Base>
 
 <script>
+  import * as THREE from 'three'
   import { gsap } from 'gsap'
 
-  function initHomeAnimation() {
-    const nameEl = document.getElementById('hero-name')
-    const avatarEl = document.getElementById('hero-avatar')
-    const bioEl = document.getElementById('hero-bio')
-    const dividerEl = document.getElementById('hero-divider')
-    const linksEl = document.getElementById('hero-links')
-    const socialEl = document.getElementById('hero-social')
+  function initThree() {
+    const canvas = document.getElementById('hero-canvas') as HTMLCanvasElement | null
+    if (!canvas) return
 
-    if (!nameEl) return
+    const section = canvas.closest('section') as HTMLElement
 
-    const underlinePath = document.querySelector<SVGPathElement>('#name-underline path')
-    const navItems = linksEl ? linksEl.querySelectorAll('[data-nav]') : []
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-    if (avatarEl) gsap.killTweensOf(avatarEl)
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
+    camera.position.z = 4.5
 
-    gsap.set(avatarEl, { opacity: 0, scale: 0.85 })
-    gsap.set(nameEl, { opacity: 0, y: 14 })
-    gsap.set(bioEl, { opacity: 0, y: 12 })
-    gsap.set(dividerEl, { opacity: 0 })
-    gsap.set(navItems, { opacity: 0, y: 8 })
-    gsap.set(socialEl, { opacity: 0 })
-    if (underlinePath) {
-      const pl = underlinePath.getTotalLength()
-      gsap.set(underlinePath, { strokeDasharray: pl, strokeDashoffset: pl })
-    }
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.15 })
-
-    tl.to(avatarEl, { opacity: 1, scale: 1, duration: 0.5 })
-    tl.to(nameEl, { opacity: 1, y: 0, duration: 0.7 }, '-=0.3')
-
-    if (underlinePath) {
-      tl.to(underlinePath, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.in' }, '-=0.4')
-    }
-
-    tl.to(bioEl, { opacity: 1, y: 0, duration: 0.4 }, '-=0.25')
-    tl.to(dividerEl, { opacity: 1, duration: 0.4, ease: 'power2.out' }, '-=0.15')
-    tl.to(navItems, { opacity: 1, y: 0, duration: 0.4, stagger: 0.08 }, '-=0.2')
-    tl.to(socialEl, { opacity: 1, duration: 0.3 }, '-=0.3')
-
-    tl.call(() => {
-      if (avatarEl) {
-        gsap.to(avatarEl, {
-          scale: 1.012,
-          duration: 3,
-          ease: 'sine.inOut',
-          yoyo: true,
-          repeat: -1,
-        })
-      }
+    const geo = new THREE.IcosahedronGeometry(1.8, 1)
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xeeebe6,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.1,
     })
+    const mesh = new THREE.Mesh(geo, mat)
+    scene.add(mesh)
 
-    if (avatarEl instanceof HTMLElement) {
-      avatarEl.addEventListener('mouseenter', () => {
-        gsap.to(avatarEl, {
-          boxShadow: '0 0 0 1px rgba(196, 92, 40, 0.18), 0 0 36px rgba(196, 92, 40, 0.22)',
-          duration: 0.5,
-          ease: 'power2.out',
-        })
-      })
-      avatarEl.addEventListener('mouseleave', () => {
-        gsap.to(avatarEl, {
-          boxShadow: '0 0 0 1px rgba(17, 17, 17, 0.10), 0 0 24px rgba(225, 87, 53, 0.08)',
-          duration: 0.7,
-          ease: 'power2.out',
-        })
-      })
+    let mouseX = 0
+    let mouseY = 0
+
+    const onMouseMove = (e: MouseEvent) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2
+      mouseY = -(e.clientY / window.innerHeight - 0.5) * 2
     }
 
-    navItems.forEach((item) => {
-      if (!(item instanceof HTMLElement)) return
-      item.addEventListener('mousemove', (e: MouseEvent) => {
-        const rect = item.getBoundingClientRect()
-        const x = e.clientX - rect.left - rect.width / 2
-        const y = e.clientY - rect.top - rect.height / 2
-        gsap.to(item, { x: x * 0.08, y: y * 0.08, duration: 0.3, ease: 'power2.out' })
-      })
-      item.addEventListener('mouseleave', () => {
-        gsap.to(item, { x: 0, y: 0, duration: 0.4, ease: 'power2.out' })
-      })
-    })
+    const onResize = () => {
+      const w = section.offsetWidth
+      const h = section.offsetHeight
+      renderer.setSize(w, h, false)
+      camera.aspect = w / h
+      camera.updateProjectionMatrix()
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('resize', onResize)
+    onResize()
+
+    let frameId = 0
+    let angle = 0
+
+    const tick = () => {
+      frameId = requestAnimationFrame(tick)
+      angle += 0.004
+      mesh.rotation.x = angle * 0.45 + mouseY * 0.12
+      mesh.rotation.y = angle + mouseX * 0.12
+      renderer.render(scene, camera)
+    }
+    tick()
+
+    document.addEventListener('astro:before-swap', () => {
+      cancelAnimationFrame(frameId)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('resize', onResize)
+      renderer.dispose()
+      geo.dispose()
+      mat.dispose()
+    }, { once: true })
   }
 
-  initHomeAnimation()
-  document.addEventListener('astro:after-swap', initHomeAnimation)
+  function initAnim() {
+    const avatar    = document.getElementById('hero-avatar')
+    const available = document.getElementById('hero-available')
+    const name      = document.getElementById('hero-name')
+    const rule      = document.getElementById('hero-rule')
+    const roles     = document.getElementById('hero-roles')
+    const actions   = document.getElementById('hero-actions')
+    const cue       = document.getElementById('scroll-cue')
+
+    if (!name) return
+
+    const els = [avatar, available, name, rule, roles, actions, cue].filter(Boolean)
+    gsap.set(els, { opacity: 0, y: 18 })
+
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.1 })
+    tl.to(avatar,    { opacity: 1, y: 0, duration: 0.5, scale: 1, clearProps: 'scale' })
+    tl.to(available, { opacity: 1, y: 0, duration: 0.45 }, '-=0.25')
+    tl.to(name,      { opacity: 1, y: 0, duration: 0.75 }, '-=0.3')
+    tl.to(rule,      { opacity: 1, y: 0, duration: 0.4 }, '-=0.3')
+    tl.to(roles,     { opacity: 1, y: 0, duration: 0.5 }, '-=0.25')
+    tl.to(actions,   { opacity: 1, y: 0, duration: 0.4 }, '-=0.2')
+    tl.to(cue,       { opacity: 1, y: 0, duration: 0.4 }, '-=0.1')
+  }
+
+  initThree()
+  initAnim()
+  document.addEventListener('astro:after-swap', () => {
+    initThree()
+    initAnim()
+  })
 </script>
 
 <style>
-  /* ═══ Hero layout ═══ */
-  .home-layout {
-    height: 100dvh;
-    min-height: 600px;
+  /* ══ Hero ══ */
+  .hero {
+    position: relative;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1.5rem;
-    position: relative;
+    overflow: hidden;
+    padding: 5rem 1.5rem 6rem;
   }
 
-  .home-center {
+  .hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    max-width: 540px;
+    max-width: 820px;
     width: 100%;
   }
 
-  /* ═══ Avatar ═══ */
+  /* Avatar */
   .hero-avatar {
-    width: 5.5rem;
-    height: 5.5rem;
+    width: 88px;
+    height: 88px;
     border-radius: 9999px;
     overflow: hidden;
     margin-bottom: 1.75rem;
-    position: relative;
-    box-shadow:
-      0 0 0 1px rgba(17, 17, 17, 0.10),
-      0 0 24px rgba(225, 87, 53, 0.08);
+    border: 1px solid rgba(238, 235, 230, 0.12);
+    box-shadow: 0 0 0 4px rgba(238, 235, 230, 0.04);
   }
 
   @media (min-width: 768px) {
     .hero-avatar {
-      width: 7rem;
-      height: 7rem;
-      margin-bottom: 2rem;
+      width: 104px;
+      height: 104px;
     }
   }
 
-  /* ═══ Name ═══ */
-  .name-wrapper {
-    position: relative;
+  .hero-avatar-img {
     width: 100%;
-    margin-bottom: 1rem;
-    padding-bottom: 14px;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: grayscale(15%);
   }
 
-  .name-underline {
-    position: absolute;
-    bottom: 0;
-    left: 3%;
-    width: 94%;
-    height: 12px;
-    overflow: visible;
+  /* Available badge */
+  .hero-available {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: rgba(238, 235, 230, 0.38);
+    margin-bottom: 2rem;
   }
 
-  .name-underline path {
-    stroke: var(--color-accent);
-    stroke-width: 2px;
-    opacity: 0.5;
+  .avail-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
+    animation: avail-pulse 2.2s ease infinite;
   }
 
-  .home-name {
+  @keyframes avail-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.35; }
+  }
+
+  /* Name */
+  .hero-name {
     font-family: var(--font-heading);
     font-weight: 800;
-    font-size: clamp(3rem, 7vw, 6.5rem);
-    line-height: 1.0;
+    font-size: clamp(3.5rem, 10vw, 9rem);
+    line-height: 0.95;
     letter-spacing: -0.04em;
     color: var(--color-primary);
-    margin-bottom: 0;
-  }
-
-  /* ═══ Bio ═══ */
-  .home-bio {
-    font-size: 0.9rem;
-    line-height: 1.7;
-    color: #645849;
-    max-width: 28rem;
     margin-bottom: 2rem;
   }
 
-  @media (min-width: 768px) {
-    .home-bio { font-size: 1rem; }
-  }
-
-  /* ═══ Divider ═══ */
-  .home-divider {
+  /* Divider */
+  .hero-rule {
     width: 100%;
-    max-width: 320px;
-    height: auto;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .home-divider::after {
-    content: '· · ·';
-    display: block;
-    text-align: center;
-    color: #aca49a;
-    letter-spacing: 0.35em;
-    font-size: 0.9rem;
-    font-family: var(--font-ui);
-    font-weight: 400;
-  }
-
-  /* ═══ Links row ═══ */
-  .hero-links {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    max-width: 380px;
+    height: 1px;
+    background: rgba(238, 235, 230, 0.1);
     margin-bottom: 1.75rem;
   }
 
-  .hero-link-item {
+  /* Roles row */
+  .hero-roles {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: 2px;
-    text-decoration: none;
-    position: relative;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 2.75rem;
   }
 
-  .hero-link-item::after {
-    content: '';
-    position: absolute;
-    bottom: 3px;
-    left: 0.75rem;
-    right: 0.75rem;
-    height: 1px;
-    background: var(--color-accent);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.22s cubic-bezier(0.25, 0, 0, 1);
-    opacity: 0.4;
-  }
-
-  .hero-link-item:hover::after { transform: scaleX(1); }
-  .hero-link-item:hover .nav-label { color: var(--color-accent); transition: color 0.2s; }
-
-  .links-sep {
-    color: #bfb0a0;
-    font-size: 11px;
-    user-select: none;
-  }
-
-  .nav-label {
+  .hero-role {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #857165;
-    transition: color 0.2s;
+    letter-spacing: 0.13em;
+    color: rgba(238, 235, 230, 0.52);
   }
 
-  .nav-sep { color: #bfb0a0; font-size: 11px; }
+  .hero-role--dim { color: rgba(238, 235, 230, 0.28); }
 
-  .nav-value {
-    font-family: var(--font-ui);
-    font-size: 13px;
-    color: #645849;
+  .hero-sep {
+    color: rgba(238, 235, 230, 0.15);
+    font-size: 0.55rem;
   }
 
-  .nav-reading {
-    font-family: var(--font-heading);
-    font-size: 13px;
-    color: var(--color-primary);
-    font-style: italic;
-  }
-
-  /* ═══ Now indicator ═══ */
-  .now-indicator {
-    position: relative;
+  /* Buttons */
+  .hero-actions {
     display: flex;
-    width: 0.375rem;
-    height: 0.375rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
-  .now-ping {
-    position: absolute;
-    inset: 0;
-    border-radius: 9999px;
-    background-color: #34d399;
-    opacity: 0.5;
-    animation: now-ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-  }
-
-  .now-dot {
-    position: relative;
+  .hero-btn {
     display: inline-flex;
-    width: 0.375rem;
-    height: 0.375rem;
-    border-radius: 9999px;
-    background-color: #34d399;
-  }
-
-  @keyframes now-ping {
-    75%, 100% { transform: scale(2.5); opacity: 0; }
-  }
-
-  .now-meta { font-size: 11px; color: #857165; }
-
-  /* ═══ Social ═══ */
-  .home-social {
-    display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.45rem;
+    padding: 0.6rem 1.25rem;
+    border: 1px solid rgba(238, 235, 230, 0.13);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: rgba(238, 235, 230, 0.45);
+    text-decoration: none;
+    border-radius: 2px;
+    transition: border-color 0.22s, color 0.22s, background 0.22s;
   }
 
-  .social-link {
-    color: #857165;
-    transition: color 0.2s;
+  .hero-btn:hover {
+    border-color: rgba(238, 235, 230, 0.35);
+    color: var(--color-primary);
   }
 
-  .social-link:hover { color: var(--color-primary); }
+  .hero-btn--primary {
+    border-color: rgba(238, 235, 230, 0.28);
+    color: var(--color-primary);
+    background: rgba(238, 235, 230, 0.04);
+  }
 
-  /* ═══ Scroll hint ═══ */
-  .scroll-hint {
+  .hero-btn--primary:hover {
+    background: rgba(238, 235, 230, 0.08);
+    border-color: rgba(238, 235, 230, 0.45);
+  }
+
+  /* Scroll cue */
+  .scroll-cue {
     position: absolute;
-    bottom: 2rem;
+    bottom: 2.25rem;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    animation: hint-fade 0.5s ease 2s both;
+    gap: 0.5rem;
+    z-index: 1;
   }
 
-  .scroll-line {
-    width: 1px;
-    height: 40px;
-    background: linear-gradient(to bottom, transparent, var(--color-accent), transparent);
-    animation: scroll-slide 2.2s ease-in-out 2s infinite;
-  }
-
-  @keyframes hint-fade {
-    from { opacity: 0; }
-    to   { opacity: 0.45; }
-  }
-
-  @keyframes scroll-slide {
-    0%   { transform: translateY(-10px); opacity: 0; }
-    40%  { opacity: 1; }
-    100% { transform: translateY(10px);  opacity: 0; }
-  }
-
-  /* ═══ Builds section ═══ */
-  .section-label {
+  .scroll-cue-label {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 0.52rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #857165;
-    opacity: 0.75;
-    white-space: nowrap;
+    letter-spacing: 0.2em;
+    color: rgba(238, 235, 230, 0.18);
   }
 
-  @keyframes build-fade-in {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+  .scroll-cue-line {
+    width: 1px;
+    height: 38px;
+    background: linear-gradient(to bottom, rgba(238, 235, 230, 0.25), transparent);
+    animation: cue-slide 2.5s ease-in-out infinite;
   }
 
-  .build-fade {
-    animation: build-fade-in 0.6s ease both;
+  @keyframes cue-slide {
+    0%   { transform: scaleY(0); transform-origin: top; opacity: 0; }
+    30%  { opacity: 1; }
+    100% { transform: scaleY(1); transform-origin: top; opacity: 0; }
   }
 
-  /* ── Hero project strip ── */
-  .hero-strip {
-    background: #111111;
-    padding: 3.5rem 0 4.5rem;
+  /* ══ Shared section layout ══ */
+  .page-section {
+    padding: 8rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .section-wrap {
+    position: relative;
+    max-width: var(--container-grid);
+    margin: 0 auto;
+  }
+
+  .section-num {
+    position: absolute;
+    top: -2.5rem;
+    left: -0.25rem;
+    font-family: var(--font-mono);
+    font-size: clamp(5rem, 14vw, 11rem);
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.028);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.06em;
+  }
+
+  .section-heading {
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4.5vw, 3.75rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--color-primary);
+    line-height: 1.05;
+    margin-bottom: 3rem;
     position: relative;
   }
 
-  .hero-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 2rem;
+  /* ══ About ══ */
+  .about-body {
+    max-width: 580px;
   }
 
-  .hero-kind {
+  .about-text {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: var(--color-secondary);
+    margin-bottom: 1.25rem;
+  }
+
+  .about-tags {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 3.5rem;
+    flex-wrap: wrap;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .about-tag { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .about-tag-key {
     font-family: var(--font-mono);
-    font-size: 11px;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: rgba(238, 235, 230, 0.22);
+  }
+
+  .about-tag-val {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  /* ══ Skills ══ */
+  .skills-body { position: relative; }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem;
+  }
+
+  @media (min-width: 768px) {
+    .skills-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem 5rem;
+    }
+  }
+
+  .skill-col-title {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(238, 235, 230, 0.28);
+    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .skill-group { margin-bottom: 1.75rem; }
+
+  .skill-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: #8aa1a3;
-    opacity: 0.75;
+    color: rgba(238, 235, 230, 0.2);
+    margin-bottom: 0.5rem;
   }
 
-  .hero-dot { color: rgba(245, 239, 230, 0.12); }
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
 
-  .hero-status-pill {
+  .skill-tag {
     font-family: var(--font-mono);
-    font-size: 10px;
+    font-size: 0.68rem;
+    color: rgba(238, 235, 230, 0.48);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.22rem 0.65rem;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .skill-tag:hover {
+    color: var(--color-primary);
+    border-color: rgba(255, 255, 255, 0.22);
+  }
+
+  .skill-tag--exploring {
+    color: rgba(238, 235, 230, 0.75);
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  /* ══ Builds ══ */
+  .builds-body { position: relative; }
+
+  .build-hero {
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 2.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .build-hero::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: rgba(238, 235, 230, 0.08);
+  }
+
+  .build-hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .build-kind {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--color-accent);
-    background: rgba(225, 87, 53, 0.12);
+    letter-spacing: 0.1em;
+    color: rgba(238, 235, 230, 0.28);
+  }
+
+  .build-sep { color: rgba(238, 235, 230, 0.1); font-size: 0.58rem; }
+
+  .build-status {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #4ade80;
+    background: rgba(74, 222, 128, 0.08);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+
+  .build-since {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: rgba(238, 235, 230, 0.14);
+  }
+
+  .build-hero-link {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+  }
+
+  .build-hero-title {
+    font-family: var(--font-heading);
+    font-size: clamp(1.75rem, 4vw, 3.25rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--color-primary);
+    line-height: 1.05;
+    transition: color 0.2s;
+  }
+
+  .build-hero-link:hover .build-hero-title { color: rgba(238, 235, 230, 0.55); }
+
+  .build-hero-arrow {
+    color: rgba(238, 235, 230, 0.14);
+    margin-top: 0.3rem;
+    flex-shrink: 0;
+    transition: color 0.22s, transform 0.25s;
+  }
+
+  .build-hero-link:hover .build-hero-arrow {
+    color: rgba(238, 235, 230, 0.55);
+    transform: translate(4px, -4px);
+  }
+
+  .build-hero-desc {
+    font-family: var(--font-body);
+    color: var(--color-secondary);
+    font-size: 0.95rem;
+    line-height: 1.78;
+    max-width: 520px;
+    margin-bottom: 1.5rem;
+  }
+
+  .build-hero-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .build-tech {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: rgba(238, 235, 230, 0.22);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
     padding: 2px 8px;
     border-radius: 2px;
   }
 
-  .hero-since {
-    margin-left: auto;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: rgba(245, 239, 230, 0.18);
-  }
-
-  .hero-project-link {
-    display: inline-flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    text-decoration: none;
-    margin-bottom: 1.75rem;
-  }
-
-  .hero-title {
-    font-family: var(--font-heading);
-    font-size: clamp(3rem, 7vw, 6.5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.0;
-    color: #f5efe6;
-    transition: color 0.25s;
-  }
-
-  .hero-project-link:hover .hero-title { color: var(--color-accent); }
-
-  .hero-arrow {
-    color: rgba(245, 239, 230, 0.18);
-    margin-top: 0.6rem;
-    flex-shrink: 0;
-    transition: color 0.25s, transform 0.25s;
-  }
-
-  .hero-project-link:hover .hero-arrow {
-    color: var(--color-accent);
-    transform: translate(4px, -4px);
-  }
-
-  .hero-desc {
-    color: rgba(245, 239, 230, 0.4);
-    font-size: 1rem;
-    max-width: 540px;
-    line-height: 1.75;
+  .builds-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
     margin-bottom: 2rem;
   }
 
-  .hero-stack {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  @media (min-width: 768px) {
+    .builds-grid { grid-template-columns: 1fr 1fr; }
   }
 
-  .hero-tech {
+  .upcoming-list { margin-top: 3rem; }
+
+  .upcoming-label {
     font-family: var(--font-mono);
-    font-size: 11px;
-    color: rgba(245, 239, 230, 0.28);
-    background: rgba(245, 239, 230, 0.05);
-    border: 1px solid rgba(245, 239, 230, 0.07);
-    padding: 3px 10px;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(238, 235, 230, 0.18);
+    margin-bottom: 1.25rem;
+  }
+
+  .upcoming-item {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  .upcoming-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgba(238, 235, 230, 0.32);
+    flex-shrink: 0;
+  }
+
+  .upcoming-desc {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: rgba(238, 235, 230, 0.18);
+  }
+
+  /* ══ Contact ══ */
+  .contact-section { padding-bottom: 12rem; }
+
+  .contact-body { position: relative; }
+
+  .contact-text {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: var(--color-secondary);
+    max-width: 400px;
+    line-height: 1.8;
+    margin-bottom: 2.75rem;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(238, 235, 230, 0.42);
+    text-decoration: none;
+    padding: 0.7rem 1.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: 2px;
-    letter-spacing: 0.02em;
+    transition: color 0.22s, border-color 0.22s;
   }
 
-  .hero-accent-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--color-terra);
+  .contact-link:hover {
+    color: var(--color-primary);
+    border-color: rgba(255, 255, 255, 0.28);
   }
 
-  /* ═══ Mobile ═══ */
+  /* Mobile */
   @media (max-width: 767px) {
-    .home-layout {
-      height: auto;
-      min-height: 100dvh;
-      padding: 3rem 1.5rem 5rem;
-    }
+    .page-section { padding: 5rem 1.25rem; }
+    .section-num { font-size: 5rem; top: -1.5rem; }
+    .hero { padding: 4rem 1.25rem 5rem; }
   }
 </style>
